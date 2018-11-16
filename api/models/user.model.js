@@ -6,7 +6,7 @@ var taskSchema = mongoose.Schema({
     required: true,
     trim: true
   },
-  comment: String
+  comment: String,
   done: {
     type: Boolean,
     default: false
