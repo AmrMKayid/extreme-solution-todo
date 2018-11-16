@@ -100,3 +100,58 @@ module.exports.signup = async (req, res) => {
     data: null,
   });
 };
+
+module.exports.login = async (req, res) => {
+  const schema = joi
+    .object({
+      username: joi
+        .string()
+        .trim()
+        .lowercase()
+        .required(),
+      password: joi
+        .string()
+        .trim()
+        .required(),
+    })
+    .options({ stripUnknown: true });
+  const result = schema.validate(req.body);
+  if (result.error) {
+    return res.status(422).json({
+      err: null,
+      msg: result.error.details[0].message,
+      data: null,
+    });
+  }
+  const user = await User.findOne({
+    username: result.value.username,
+  }).exec();
+  if (!user) {
+    return res
+      .status(404)
+      .json({ err: null, msg: 'Account not found.', data: null });
+  }
+  const passwordMatches = await Encryption.comparePasswordToHash(
+    result.value.password,
+    user.password,
+  );
+  if (!passwordMatches) {
+    return res
+      .status(401)
+      .json({ err: null, msg: 'Password is incorrect.', data: null });
+  }
+  const token = jwt.sign(
+    {
+      user: user.toObject(),
+    },
+    config.SECRET,
+    {
+      expiresIn: '24h',
+    },
+  );
+  res.status(200).json({
+    err: null,
+    msg: `Welcome, ${user.username}.`,
+    data: token,
+  });
+};
