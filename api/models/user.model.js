@@ -1,5 +1,40 @@
 const mongoose = require('mongoose');
 
+var taskSchema = mongoose.Schema({
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  comment: String
+  done: {
+    type: Boolean,
+    default: false
+  },
+  dueDate: Date,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: Date
+});
+
+var todoSchema = mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  tasks: [taskSchema],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: Date
+});
+
 const userSchema = mongoose.Schema({
   firstName: {
     type: String,
@@ -38,6 +73,7 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  todos: [todoSchema],
   createdAt: {
     type: Date,
     default: Date.now,
