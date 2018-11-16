@@ -155,3 +155,86 @@ module.exports.login = async (req, res) => {
     data: token,
   });
 };
+
+module.exports.verifyAccount = async (req, res) => {
+  const user = await User.findOne({
+    verificationToken: req.params.verificationToken,
+    verificationTokenExpiry: {
+      $gt: moment().toDate(),
+    },
+  }).exec();
+  if (!user) {
+    return res.status(422).json({
+      err: null,
+      msg:
+        'Verification token is invalid or has expired, you can resend the verification email and try again.',
+      data: null,
+    });
+  }
+  user.verificationToken = undefined;
+  user.verificationTokenExpiry = undefined;
+  user.verified = true;
+  await user.save();
+  res.status(200).json({
+    err: null,
+    msg: 'Account was verified successfully.',
+    data: null,
+  });
+};
+
+module.exports.resendVerificationEmail = async (req, res) => {
+  const schema = joi
+    .object({
+      email: joi
+        .string()
+        .trim()
+        .lowercase()
+        .email()
+        .required(),
+    })
+    .options({
+      stripUnknown: true,
+    });
+  const result = schema.validate(req.body);
+  if (result.error) {
+    return res.status(422).json({
+      msg: result.error.details[0].message,
+      err: null,
+      data: null,
+    });
+  }
+  const user = await User.findOne({
+    email: result.value.email,
+  }).exec();
+  if (!user) {
+    return res.status(404).json({
+      err: null,
+      msg:
+        'Email is not associated with any pending accounts!',
+      data: null,
+    });
+  }
+  Object.assign(user, {
+    verificationToken: rand.generate(32),
+    verificationTokenExpiry: moment()
+      .add(24, 'hours')
+      .toDate(),
+  });
+  await user.save();
+  await nodemailer.sendMail({
+    from: config.MAILER_SENDER,
+    to: user.email,
+    subject: 'Account Verification',
+    html: `<p>Hello ${
+      user.firstName
+    }, Welcome to ToDo App <br> please click on the following link to verify your account: <a href="${
+      config.FRONTEND_URI
+    }/verifyAccount/${user.verificationToken}">Verify</a></p>`,
+  });
+  res.status(200).json({
+    err: null,
+    msg:
+      'Email was sent successfully, please check your inbox to verify your account.',
+    data: null,
+  });
+};
