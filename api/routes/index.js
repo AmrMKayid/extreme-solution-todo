@@ -58,4 +58,26 @@ router.patch(
   errorHandler(authCtrl.verifyAccount),
 );
 
+//-------------------------------Todo Routes---------------------------------
+router.get('/todo/getTodos', isAuthenticated, todoCtrl.getTodos);
+router.get('/todo/getTodo/:todoId', isAuthenticated, todoCtrl.getTodo);
+router.post('/todo/createTodo', isAuthenticated, todoCtrl.createTodo);
+router.patch(
+  '/todo/updateTodoName/:todoId',
+  isAuthenticated,
+  todoCtrl.updateTodoName
+);
+router.patch('/todo/:todoId/createTask', isAuthenticated, todoCtrl.createTask);
+router.patch(
+  '/todo/:todoId/updateTask/:taskId',
+  isAuthenticated,
+  todoCtrl.updateTask
+);
+router.patch(
+  '/todo/:todoId/deleteTask/:taskId',
+  isAuthenticated,
+  todoCtrl.deleteTask
+);
+router.delete('/todo/deleteTodo/:todoId', isAuthenticated, todoCtrl.deleteTodo);
+
 module.exports = router;

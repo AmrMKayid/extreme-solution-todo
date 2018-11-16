@@ -4,7 +4,7 @@ const Validations = require('../utils/validations');
 
 const User = mongoose.model('User');
 
-module.exports.getToDos = function(req, res, next) {
+module.exports.getTodos = function(req, res, next) {
   User.findById(req.decodedToken.user._id).exec(function(err, user) {
     if (err) {
       return next(err);
@@ -22,7 +22,7 @@ module.exports.getToDos = function(req, res, next) {
   });
 };
 
-module.exports.getToDo = function(req, res, next) {
+module.exports.getTodo = function(req, res, next) {
   if (!Validations.isObjectId(req.params.todoId)) {
     return res.status(422).json({
       err: null,
@@ -55,7 +55,7 @@ module.exports.getToDo = function(req, res, next) {
   });
 };
 
-module.exports.createToDo = function(req, res, next) {
+module.exports.createTodo = function(req, res, next) {
   var valid = req.body.name && Validations.isString(req.body.name);
   if (!valid) {
     return res.status(422).json({
@@ -108,7 +108,7 @@ module.exports.createToDo = function(req, res, next) {
   });
 };
 
-module.exports.updateToDoName = function(req, res, next) {
+module.exports.updateTodoName = function(req, res, next) {
   if (!Validations.isObjectId(req.params.todoId)) {
     return res.status(422).json({
       err: null,
@@ -345,7 +345,7 @@ module.exports.deleteTask = function(req, res, next) {
   });
 };
 
-module.exports.deleteToDo = function(req, res, next) {
+module.exports.deleteTodo = function(req, res, next) {
   if (!Validations.isObjectId(req.params.todoId)) {
     return res.status(422).json({
       err: null,
