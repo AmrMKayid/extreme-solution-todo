@@ -294,3 +294,90 @@ module.exports.updateTask = function(req, res, next) {
     });
   });
 };
+
+module.exports.deleteTask = function(req, res, next) {
+  if (
+    !Validations.isObjectId(req.params.todoId) &&
+    Validations.isObjectId(req.params.taskId)
+  ) {
+    return res.status(422).json({
+      err: null,
+      msg: 'todoId and taskId parameters must be valid ObjectIds.',
+      data: null
+    });
+  }
+
+  User.findById(req.decodedToken.user._id).exec(function(err, user) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res
+        .status(404)
+        .json({ err: null, msg: 'User not found.', data: null });
+    }
+
+    var todo = user.todos.id(req.params.todoId);
+    if (!todo) {
+      return res
+        .status(404)
+        .json({ err: null, msg: 'todo not found.', data: null });
+    }
+
+    var task = todo.tasks.id(req.params.taskId);
+    if (!task) {
+      return res
+        .status(404)
+        .json({ err: null, msg: 'Task not found.', data: null });
+    }
+    task.remove();
+
+    user.save(function(err) {
+      if (err) {
+        return next(err);
+      }
+      res.status(200).json({
+        err: null,
+        msg: 'Task was deleted successfully.',
+        data: task
+      });
+    });
+  });
+};
+
+module.exports.deleteToDo = function(req, res, next) {
+  if (!Validations.isObjectId(req.params.todoId)) {
+    return res.status(422).json({
+      err: null,
+      msg: 'todoId parameter must be a valid ObjectId.',
+      data: null
+    });
+  }
+  User.findById(req.decodedToken.user._id).exec(function(err, user) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res
+        .status(404)
+        .json({ err: null, msg: 'User not found.', data: null });
+    }
+    var todo = user.todos.id(req.params.todoId);
+    if (!todo) {
+      return res
+        .status(404)
+        .json({ err: null, msg: 'todo not found.', data: null });
+    }
+    todo.remove();
+    user.save(function(err) {
+      if (err) {
+        return next(err);
+      }
+      res.status(200).json({
+        err: null,
+        msg: 'todo was deleted successfully.',
+        data: todo
+      });
+    });
+  });
+};
